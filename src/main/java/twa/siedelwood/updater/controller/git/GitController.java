@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import lombok.Getter;
@@ -22,6 +23,8 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevTree;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.revwalk.filter.RevFilter;
+import org.eclipse.jgit.transport.FetchResult;
+import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
@@ -120,11 +123,12 @@ public class GitController {
         {
             status = Status.CLONE;
             Git.cloneRepository()
-               .setURI(targetRepositoryUrl)
-               .setDirectory(new File(System.getProperty("user.dir") + File.separator + targetDirectory))
-               .setBranchesToClone(Collections.singletonList("refs/heads/" + targetBranch))
-               .setBranch("refs/heads/" +targetBranch)
-               .call();
+                .setURI(targetRepositoryUrl)
+                .setDirectory(new File(System.getProperty("user.dir") + File.separator + targetDirectory))
+                .setBranchesToClone(Collections.singletonList("refs/heads/" + targetBranch))
+                .setBranch("refs/heads/" +targetBranch)
+                .call()
+                .close();
             status = Status.WAIT;
         }
         catch (GitAPIException e)
@@ -140,31 +144,26 @@ public class GitController {
      * @throws GitException Checking changes failed
      */
     public boolean isCurrentVersion() throws GitException {
-        try (Git git = getRepository();
-             ObjectReader reader = git.getRepository().newObjectReader();
-             RevWalk rw = new RevWalk(git.getRepository()))
+        try (Git git = getRepository())
         {
-            Repository repo = git.getRepository();
-            RevCommit commitA = rw.parseCommit(repo.resolve("refs/remotes/master"));
-            RevCommit commitB = rw.parseCommit(repo.resolve("refs/heads/master"));
-            rw.markStart(commitA);
-            rw.markStart(commitB);
-            rw.setRevFilter(RevFilter.MERGE_BASE);
-            RevCommit base = rw.parseCommit(rw.next());
-            CanonicalTreeParser aParser = new CanonicalTreeParser();
-            aParser.reset(reader, base.getTree());
-            CanonicalTreeParser bParser = new CanonicalTreeParser();
-            bParser.reset(reader, commitB.getTree());
-            return git.diff().setOldTree(aParser).setNewTree(bParser).call().isEmpty();
+            status = Status.FETCH;
+            FetchResult result = git
+                .fetch()
+                .setRefSpecs(new RefSpec("refs/heads/master"))
+                .call();
+            git.close();
+            status = Status.WAIT;
+            return result.getTrackingRefUpdates().isEmpty();
         }
         catch (IOException | GitAPIException e)
         {
-            e.printStackTrace();
+            status = Status.ERROR;
+            LOG.error("Failed to fetch changes on branch {}!", targetBranch, e);
+            throw new GitException("Failed to fetch changes on branch " +targetBranch+ "!", e);
         }
-        return false;
     }
 
-        /**
+    /**
      * Rebases the directory to the tip of tbe branch.
      * @throws GitException Rebasing has failed
      */
@@ -175,30 +174,6 @@ public class GitController {
             git.reset().setMode(ResetCommand.ResetType.HARD).call();
             git.pull().setRebase(true).call();
             git.close();
-            status = Status.WAIT;
-        }
-        catch (IOException e) {
-            status = Status.ERROR;
-            LOG.error("Failed to open repository!", e);
-        }
-        catch (GitAPIException e) {
-            status = Status.ERROR;
-            LOG.error("Failed to pull changes on branch {}!", targetBranch, e);
-            throw new GitException("Failed to pull changes on branch " +targetBranch+ "!", e);
-        }
-    }
-
-    public void rebaseRepositoryForceRemoteBranch() throws GitException {
-        try
-        {
-            status = Status.REBASE;
-            final Git repository = getRepository();
-            repository.checkout().setCreateBranch(true).setName("dummy").call();
-            repository.branchDelete().setBranchNames("master").call();
-            repository.checkout().setName("master").call();
-            repository.branchDelete().setBranchNames("dummy").call();
-            repository.reset().setMode(ResetCommand.ResetType.HARD).call();
-            repository.pull().setRebase(true).call();
             status = Status.WAIT;
         }
         catch (IOException e) {
