@@ -5,6 +5,7 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,10 @@ public class ApplicationFeatureController {
     private String targetBranch;
     @Value("${target.directory}")
     private String targetDirectory;
+    @Value("${target.app.jar}")
+    private String targetJarName;
+    @Value("${target.app.dir}")
+    private String targetDirName;
 
     @Autowired
     private ApplicationContext applicationContext;
@@ -75,16 +80,39 @@ public class ApplicationFeatureController {
     }
 
     public String getChangelog() {
+        LOG.info("Reading changelog...");
         String content = null;
         try
         {
             final ByteArrayOutputStream data = (ByteArrayOutputStream) gitController.getFile("changelog.txt");
             content = new String(data.toByteArray(), StandardCharsets.UTF_8);
+            if (StringUtils.isBlank(content)) {
+                LOG.warn("Changelog not found!");
+            }
+            else {
+                LOG.info("Changelog loaded!");
+            }
+        }
+        catch (GitException e)
+        {
+            LOG.error("Error loading changelog!");
+            lastException = e;
+        }
+        return content;
+    }
+
+    public int checkForUpdates() {
+        try
+        {
+            if (gitController.isCurrentVersion()) {
+                return 0;
+            }
         }
         catch (GitException e)
         {
             lastException = e;
+            return -1;
         }
-        return content;
+        return 1;
     }
 }

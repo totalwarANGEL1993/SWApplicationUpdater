@@ -5,15 +5,19 @@ import lombok.Setter;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand;
+import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.ObjectId;
-import org.eclipse.jgit.lib.ObjectLoader;
+import org.eclipse.jgit.diff.DiffEntry;
+import org.eclipse.jgit.errors.RepositoryNotFoundException;
+import org.eclipse.jgit.lib.*;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevTree;
 import org.eclipse.jgit.revwalk.RevWalk;
+import org.eclipse.jgit.revwalk.RevWalkUtils;
 import org.eclipse.jgit.transport.FetchResult;
 import org.eclipse.jgit.transport.RefSpec;
+import org.eclipse.jgit.treewalk.AbstractTreeIterator;
+import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.slf4j.Logger;
@@ -28,6 +32,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * Controller für Clone und Rebase des referenzierten Repository.
@@ -45,17 +50,6 @@ public class GitController {
     private String targetBranch;
     @Value("${target.directory}")
     private String targetDirectory;
-
-    @Getter
-    @Setter
-    private volatile Status status = Status.WAIT;
-
-    /**
-     * Resets the controller status.
-     */
-    public void resetStatus() {
-        status = Status.WAIT;
-    }
 
     /**
      * Returns a new Git instance with the repository loaded.
@@ -77,7 +71,7 @@ public class GitController {
         OutputStream os = new ByteArrayOutputStream();
         try (Git git = getRepository())
         {
-            final ObjectId lastCommitId = git.getRepository().resolve(Constants.HEAD);
+            final ObjectId lastCommitId = git.getRepository().resolve("refs/remotes/origin/master");
 
             try (RevWalk revWalk = new RevWalk(git.getRepository()))
             {
@@ -102,7 +96,6 @@ public class GitController {
         }
         catch (Exception e)
         {
-            status = Status.ERROR;
             throw new GitException("Failed to obtain file!", e);
         }
         return os;
@@ -115,7 +108,6 @@ public class GitController {
     public void cloneRepository() throws GitException {
         try
         {
-            status = Status.CLONE;
             Git.cloneRepository()
                 .setURI(targetRepositoryUrl)
                 .setDirectory(new File(System.getProperty("user.dir") + File.separator + targetDirectory))
@@ -123,11 +115,9 @@ public class GitController {
                 .setBranch("refs/heads/" +targetBranch)
                 .call()
                 .close();
-            status = Status.WAIT;
         }
         catch (GitAPIException e)
         {
-            status = Status.ERROR;
             throw new GitException("Failed to clone repository!", e);
         }
     }
@@ -140,20 +130,37 @@ public class GitController {
     public boolean isCurrentVersion() throws GitException {
         try (Git git = getRepository())
         {
-            status = Status.FETCH;
-            FetchResult result = git
-                .fetch()
-                .setRefSpecs(new RefSpec("refs/heads/master"))
-                .call();
-            git.close();
-            status = Status.WAIT;
-            return result.getTrackingRefUpdates().isEmpty();
+            git.fetch().call();
+            AbstractTreeIterator oldTreeParser = prepareTreeParser(git.getRepository(), "refs/heads/master");
+            AbstractTreeIterator newTreeParser = prepareTreeParser(git.getRepository(), "refs/remotes/origin/master");
+            List<DiffEntry> diff = git.diff().setOldTree(oldTreeParser).setNewTree(newTreeParser).call();
+            return diff.isEmpty();
         }
-        catch (IOException | GitAPIException e)
+        catch (RepositoryNotFoundException e) {
+            cloneRepository();
+            return isCurrentVersion();
+        }
+        catch (Exception e)
         {
-            status = Status.ERROR;
             LOG.error("Failed to fetch changes on branch {}!", targetBranch, e);
             throw new GitException("Failed to fetch changes on branch " +targetBranch+ "!", e);
+        }
+    }
+
+    private static AbstractTreeIterator prepareTreeParser(Repository repository, String ref) throws IOException {
+        Ref head = repository.exactRef(ref);
+        try (RevWalk walk = new RevWalk(repository)) {
+            RevCommit commit = walk.parseCommit(head.getObjectId());
+            RevTree tree = walk.parseTree(commit.getTree().getId());
+
+            CanonicalTreeParser treeParser = new CanonicalTreeParser();
+            try (ObjectReader reader = repository.newObjectReader()) {
+                treeParser.reset(reader, tree.getId());
+            }
+
+            walk.dispose();
+
+            return treeParser;
         }
     }
 
@@ -164,18 +171,13 @@ public class GitController {
     public void rebaseRepository() throws GitException {
         try (Git git = getRepository())
         {
-            status = Status.REBASE;
             git.reset().setMode(ResetCommand.ResetType.HARD).call();
             git.pull().setRebase(true).call();
-            git.close();
-            status = Status.WAIT;
         }
         catch (IOException e) {
-            status = Status.ERROR;
             LOG.error("Failed to open repository!", e);
         }
         catch (GitAPIException e) {
-            status = Status.ERROR;
             LOG.error("Failed to pull changes on branch {}!", targetBranch, e);
             throw new GitException("Failed to pull changes on branch " +targetBranch+ "!", e);
         }
@@ -188,27 +190,12 @@ public class GitController {
     public void purgeRepository() throws GitException {
         try
         {
-            status = Status.PURGE;
             final File directory = new File(System.getProperty("user.dir") + File.separator + targetDirectory);
             FileUtils.deleteDirectory(directory);
-            status = Status.WAIT;
         }
         catch (Exception e) {
-            status = Status.ERROR;
             LOG.error("Failed to purge repository!", e);
             throw new GitException("\"Failed to purge repository!", e);
         }
-    }
-
-    /**
-     * Status of repository interactions.
-     */
-    public enum Status {
-        WAIT,
-        FETCH,
-        CLONE,
-        REBASE,
-        PURGE,
-        ERROR
     }
 }
