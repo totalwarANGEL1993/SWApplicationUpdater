@@ -1,11 +1,16 @@
 package twa.siedelwood.updater.controller.app;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
+import java.awt.*;
+import java.io.*;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
+
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.Status;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +35,8 @@ public class ApplicationFeatureController {
     private String targetDirectory;
     @Value("${target.app.jar}")
     private String targetJarName;
+    @Value("${target.app.run}")
+    private String targetJarMode;
     @Value("${target.app.dir}")
     private String targetDirName;
 
@@ -52,6 +59,10 @@ public class ApplicationFeatureController {
         }
         try
         {
+            final Status status = getRepositoryStatus();
+            if (status.hasUncommittedChanges()) {
+                gitController.resetRepository();
+            }
             if (gitController.isCurrentVersion()) {
                 return 1;
             }
@@ -114,5 +125,45 @@ public class ApplicationFeatureController {
             return -1;
         }
         return 1;
+    }
+
+    public Status getRepositoryStatus() throws GitException {
+        try {
+            return gitController.getRepository().status().call();
+        }
+        catch (IOException | GitAPIException e) {
+            throw new GitException("Unable to read status!", e);
+        }
+    }
+
+    public void runTargetApplication() {
+        try {
+            String pwd = System.getProperty("user.dir");
+            if (targetJarMode.equals("normal")) {
+                Runtime.getRuntime().exec(
+                    "jre/bin/java -jar -Dfile.encoding=UTF8 " +
+                    targetDirectory +
+                    File.separator +
+                    targetDirName +
+                    File.separator +
+                    targetJarName
+                );
+            }
+            else {
+                String path = "" +
+                    pwd +
+                    File.separator +
+                    targetDirectory +
+                    File.separator +
+                    targetDirName;
+                path = path.replaceAll("\\\\", "/");
+                String execution = "cmd /c /b start & cd " + path + " & " + pwd + "/jre/bin/java -jar -Dfile.encoding=UTF8 " + targetJarName;
+                System.out.println(execution);
+                Runtime.getRuntime().exec(execution);
+            }
+        }
+        catch (Exception e) {
+            LOG.error("Failed to start application!", e);
+        }
     }
 }

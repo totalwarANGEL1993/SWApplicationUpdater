@@ -3,16 +3,20 @@ package twa.siedelwood.updater.controller.app;
 import java.awt.event.ActionEvent;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
+
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.jgit.api.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.stereotype.Component;
 import twa.siedelwood.updater.controller.git.GitController;
+import twa.siedelwood.updater.controller.git.GitException;
 import twa.siedelwood.updater.ui.SwingMessageService;
 import twa.siedelwood.updater.ui.components.frame.MainWindow;
 
@@ -67,21 +71,31 @@ public class ApplicationInterfaceController extends AbstractInterfaceController 
         windowFrame.getOngoingProcessScreen().setVisible(true);
         Thread t = new Thread(() -> {
             int result = applicationFeatureController.checkForUpdates();
-            if (result == -1) {
-                swingMessageService.displayErrorMessage(
-                    "Fehler",
-                    "Es konnte nicht auf den Remote zugegriffen und nach einem Update gesucht werden!"
-                );
-                windowFrame.getOngoingProcessScreen().setVisible(false);
-                windowFrame.getRunApplicationScreen().setVisible(true);
+            try {
+                Status status = applicationFeatureController.getRepositoryStatus();
+                if (status.hasUncommittedChanges()) {
+                    result = 1;
+                }
+                if (result == -1) {
+                    swingMessageService.displayErrorMessage(
+                        "Fehler",
+                        "Es konnte nicht auf den Remote zugegriffen und nach einem Update gesucht werden!\n\n" +
+                        applicationFeatureController.getLastException().getMessage()
+                    );
+                    windowFrame.getOngoingProcessScreen().setVisible(false);
+                    windowFrame.getRunApplicationScreen().setVisible(true);
+                }
+                else if (result == 0) {
+                    windowFrame.getOngoingProcessScreen().setVisible(false);
+                    windowFrame.getRunApplicationScreen().setVisible(true);
+                }
+                else {
+                    windowFrame.getOngoingProcessScreen().setVisible(false);
+                    windowFrame.getUpdateOrContinueScreen().setVisible(true);
+                }
             }
-            else if (result == 0) {
-                windowFrame.getOngoingProcessScreen().setVisible(false);
-                windowFrame.getRunApplicationScreen().setVisible(true);
-            }
-            else {
-                windowFrame.getOngoingProcessScreen().setVisible(false);
-                windowFrame.getUpdateOrContinueScreen().setVisible(true);
+            catch (GitException e) {
+                e.printStackTrace();
             }
         });
         t.start();
@@ -97,7 +111,8 @@ public class ApplicationInterfaceController extends AbstractInterfaceController 
             if (StringUtils.isBlank(content)) {
                 swingMessageService.displayErrorMessage(
                     "Fehler",
-                    "Die Versionshistorie konnte nicht geladen werden!"
+                    "Die Versionshistorie konnte nicht geladen werden!\n\n" +
+                    applicationFeatureController.getLastException().getMessage()
                 );
             }
             windowFrame.getOngoingProcessScreen().setVisible(false);
@@ -117,7 +132,33 @@ public class ApplicationInterfaceController extends AbstractInterfaceController 
         windowFrame.getUpdateApplicationScreen().setVisible(false);
         windowFrame.getOngoingProcessScreen().setVisible(true);
         Thread t = new Thread(() -> {
-
+            final int result = applicationFeatureController.updateTargetApplication();
+            if (result == -1) {
+                swingMessageService.displayErrorMessage(
+                    "Fehler",
+                    "Beim Update ist ein Fehler aufgetreten!\n\n" +
+                    applicationFeatureController.getLastException().getMessage()
+                );
+                ((ConfigurableApplicationContext) applicationContext).close();
+                System.exit(1);
+            }
+            else if (result == 1) {
+                swingMessageService.displayWarningMessage(
+                    "Achtung",
+                    targetAppName+ " war bereits auf dem neusten Stand! Es wurden allerdings fehlende Dateien" +
+                    " festgestellt und behoben!"
+                );
+                windowFrame.getOngoingProcessScreen().setVisible(false);
+                windowFrame.getRunApplicationScreen().setVisible(true);
+            }
+            else {
+                swingMessageService.displayInfoMessage(
+                    "Erfolg",
+                    "Alle Updates wurden heruntergeladen. " +targetAppName+ " kann jetzt verwendet werden."
+                );
+                windowFrame.getOngoingProcessScreen().setVisible(false);
+                windowFrame.getRunApplicationScreen().setVisible(true);
+            }
         });
         t.start();
     }
@@ -132,7 +173,9 @@ public class ApplicationInterfaceController extends AbstractInterfaceController 
         LOG.info("DEBUG: Application is starded.");
         windowFrame.getRunApplicationScreen().setVisible(false);
         Thread t = new Thread(() -> {
-
+            applicationFeatureController.runTargetApplication();
+            ((ConfigurableApplicationContext) applicationContext).close();
+            System.exit(0);
         });
         t.start();
     }

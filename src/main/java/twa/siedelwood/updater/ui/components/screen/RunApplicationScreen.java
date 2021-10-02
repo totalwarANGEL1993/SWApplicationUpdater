@@ -45,14 +45,14 @@ public class RunApplicationScreen extends JPanel {
         JLabel textLabel = new JLabel(
             "<html><span style=\"text-align: center;\">Die Anwendung ist aktuell und bereit.</span></html>"
         );
-        textLabel.setBounds((int) (panelWidth * 0.50 -100), (int) (panelHeight * 0.40 -40), 300, 12);
+        textLabel.setBounds((int) (panelWidth * 0.50 -105), (int) (panelHeight * 0.40 -40), 300, 12);
         textLabel.setFont(new Font("Arial", Font.PLAIN, 12));
         add(textLabel);
 
         JButton confirm = new JButton("<html><span style=\"font-size: 18px;\">Starten</span></html>");
         confirm.setName("RunPage_RunApplication");
         confirm.addActionListener(parentWindow.getApplicationInterfaceController());
-        confirm.setBounds((int) (panelWidth * 0.5 -90),  (int) (panelHeight * 0.40 -10),  180, 35);
+        confirm.setBounds((int) (panelWidth * 0.5 -95),  (int) (panelHeight * 0.40 -10),  180, 35);
         add(confirm);
 
         JLabel versionLabel = new JLabel("<html>Version: " +parentWindow.getVersion()+ "</html>");

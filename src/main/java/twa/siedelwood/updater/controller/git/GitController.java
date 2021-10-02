@@ -6,7 +6,10 @@ import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.api.Status;
+import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.InvalidRemoteException;
+import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.errors.RepositoryNotFoundException;
 import org.eclipse.jgit.lib.*;
@@ -116,8 +119,13 @@ public class GitController {
                 .call()
                 .close();
         }
-        catch (GitAPIException e)
-        {
+        catch (InvalidRemoteException e) {
+            throw new GitException("Can not find remote repository!", e);
+        }
+        catch (TransportException e) {
+            throw new GitException("Failed to connect to repository", e);
+        }
+        catch (GitAPIException e) {
             throw new GitException("Failed to clone repository!", e);
         }
     }
@@ -137,6 +145,7 @@ public class GitController {
             return diff.isEmpty();
         }
         catch (RepositoryNotFoundException e) {
+            purgeRepository();
             cloneRepository();
             return isCurrentVersion();
         }
@@ -152,15 +161,22 @@ public class GitController {
         try (RevWalk walk = new RevWalk(repository)) {
             RevCommit commit = walk.parseCommit(head.getObjectId());
             RevTree tree = walk.parseTree(commit.getTree().getId());
-
             CanonicalTreeParser treeParser = new CanonicalTreeParser();
             try (ObjectReader reader = repository.newObjectReader()) {
                 treeParser.reset(reader, tree.getId());
             }
-
             walk.dispose();
-
             return treeParser;
+        }
+    }
+
+    public void resetRepository() throws GitException {
+        try (Git git = getRepository()) {
+            git.reset().setMode(ResetCommand.ResetType.HARD).call();
+        }
+        catch (Exception e) {
+            LOG.error("Failed to open repository!", e);
+            throw new GitException("Failed to reset repositoty!", e);
         }
     }
 
@@ -171,7 +187,7 @@ public class GitController {
     public void rebaseRepository() throws GitException {
         try (Git git = getRepository())
         {
-            git.reset().setMode(ResetCommand.ResetType.HARD).call();
+            resetRepository();
             git.pull().setRebase(true).call();
         }
         catch (IOException e) {
@@ -191,7 +207,9 @@ public class GitController {
         try
         {
             final File directory = new File(System.getProperty("user.dir") + File.separator + targetDirectory);
-            FileUtils.deleteDirectory(directory);
+            if (directory.exists()) {
+                FileUtils.deleteDirectory(directory);
+            }
         }
         catch (Exception e) {
             LOG.error("Failed to purge repository!", e);
