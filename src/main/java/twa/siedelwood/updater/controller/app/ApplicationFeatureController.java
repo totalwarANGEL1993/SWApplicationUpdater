@@ -25,7 +25,7 @@ import twa.siedelwood.updater.controller.git.GitException;
  */
 @Component
 public class ApplicationFeatureController {
-    private static final Logger LOG = LoggerFactory.getLogger(CommandLineRunner.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ApplicationFeatureController.class);
 
     @Value("${target.repository}")
     private String targetRepositoryUrl;
@@ -139,15 +139,18 @@ public class ApplicationFeatureController {
     public void runTargetApplication() {
         try {
             String pwd = System.getProperty("user.dir");
+            pwd = pwd.replaceAll(" ", "^ ");
             if (targetJarMode.equals("normal")) {
-                Runtime.getRuntime().exec(
+                String execution = "" +
                     "jre/bin/java -jar -Dfile.encoding=UTF8 " +
                     targetDirectory +
                     File.separator +
                     targetDirName +
                     File.separator +
-                    targetJarName
-                );
+                    targetJarName;
+                execution = execution.replaceAll("\\\\", "/");
+                LOG.info("Executing runtime: " +execution);
+                Runtime.getRuntime().exec(execution);
             }
             else {
                 String path = "" +
@@ -157,8 +160,9 @@ public class ApplicationFeatureController {
                     File.separator +
                     targetDirName;
                 path = path.replaceAll("\\\\", "/");
+                path = path.replaceAll(" ", "^ ");
                 String execution = "cmd /c /b start & cd " + path + " & " + pwd + "/jre/bin/java -jar -Dfile.encoding=UTF8 " + targetJarName;
-                System.out.println(execution);
+                LOG.info("Executing runtime: " +execution);
                 Runtime.getRuntime().exec(execution);
             }
         }
