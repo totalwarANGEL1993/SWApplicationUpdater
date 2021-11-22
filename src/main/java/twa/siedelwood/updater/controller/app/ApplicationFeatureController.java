@@ -112,6 +112,28 @@ public class ApplicationFeatureController {
         return content;
     }
 
+    public String getLocalChangelog() {
+        LOG.info("Reading changelog...");
+        String content = null;
+        try
+        {
+            final ByteArrayOutputStream data = (ByteArrayOutputStream) gitController.getFile("changelog.txt");
+            content = new String(data.toByteArray(), StandardCharsets.UTF_8);
+            if (StringUtils.isBlank(content)) {
+                LOG.warn("Changelog not found!");
+            }
+            else {
+                LOG.info("Changelog loaded!");
+            }
+        }
+        catch (GitException e)
+        {
+            LOG.error("Error loading changelog!");
+            lastException = e;
+        }
+        return content;
+    }
+
     public int checkForUpdates() {
         try
         {

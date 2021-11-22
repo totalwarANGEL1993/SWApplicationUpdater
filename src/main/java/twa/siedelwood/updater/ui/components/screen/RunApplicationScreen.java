@@ -55,6 +55,12 @@ public class RunApplicationScreen extends JPanel {
         confirm.setBounds((int) (panelWidth * 0.5 -95),  (int) (panelHeight * 0.40 -10),  180, 35);
         add(confirm);
 
+        JButton showlog = new JButton("Changelog");
+        showlog.setName("RunPage_ShowChangeLog");
+        showlog.addActionListener(parentWindow.getApplicationInterfaceController());
+        showlog.setBounds((int) (panelWidth * 0.5 -60), panelHeight -100, 120, 25);
+        add(showlog);
+
         JLabel versionLabel = new JLabel("<html>Version: " +parentWindow.getVersion()+ "</html>");
         versionLabel.setBounds(10, panelHeight - 60, 200, 15);
         versionLabel.setFont(new Font("Arial", Font.PLAIN, 12));

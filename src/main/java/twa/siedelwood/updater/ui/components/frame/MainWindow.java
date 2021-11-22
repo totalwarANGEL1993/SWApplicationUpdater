@@ -2,10 +2,7 @@ package twa.siedelwood.updater.ui.components.frame;
 
 import lombok.Getter;
 import lombok.Setter;
-import twa.siedelwood.updater.ui.components.screen.OngoingProcessScreen;
-import twa.siedelwood.updater.ui.components.screen.RunApplicationScreen;
-import twa.siedelwood.updater.ui.components.screen.UpdateApplicationScreen;
-import twa.siedelwood.updater.ui.components.screen.UpdateOrContinueScreen;
+import twa.siedelwood.updater.ui.components.screen.*;
 
 import javax.swing.*;
 
@@ -37,6 +34,8 @@ public class MainWindow extends AbstractWindow {
     private UpdateApplicationScreen updateApplicationScreen;
     @Getter
     private RunApplicationScreen runApplicationScreen;
+    @Getter
+    private JustShowChangeLogScreen justShowChangeLogScreen;
 
     public MainWindow() {
         super();
@@ -70,11 +69,16 @@ public class MainWindow extends AbstractWindow {
         mainPanel.add(runApplicationScreen);
         runApplicationScreen.initPanel();
 
+        justShowChangeLogScreen = new JustShowChangeLogScreen(this, windowWidth, windowHeight);
+        mainPanel.add(justShowChangeLogScreen);
+        justShowChangeLogScreen.initPanel();
+
         setVisible(true);
         setOngoingProcessPanelVisibility(true);
         setUpdateOrContinueScreen(false);
         setUpdateApplicationScreen(false);
         setRunApplicationScreen(false);
+        setJustShowChangeLogScreen(false);
     }
 
     public void setOngoingProcessPanelVisibility(boolean flag) {
@@ -91,5 +95,9 @@ public class MainWindow extends AbstractWindow {
 
     public void setRunApplicationScreen(boolean flag) {
         runApplicationScreen.setVisible(flag);
+    }
+
+    public void setJustShowChangeLogScreen(boolean flag) {
+        justShowChangeLogScreen.setVisible(flag);
     }
 }

@@ -180,6 +180,32 @@ public class ApplicationInterfaceController extends AbstractInterfaceController 
         t.start();
     }
 
+    private void onChangeLogShown() {
+        LOG.info("DEBUG: Changelog is shown.");
+        windowFrame.getRunApplicationScreen().setVisible(false);
+        windowFrame.getOngoingProcessScreen().setVisible(true);
+        Thread t = new Thread(() -> {
+            String content = applicationFeatureController.getLocalChangelog();
+            windowFrame.getJustShowChangeLogScreen().getChangeLog().setText(content);
+            if (StringUtils.isBlank(content)) {
+                swingMessageService.displayErrorMessage(
+                    "Fehler",
+                    "Die Versionshistorie konnte nicht geladen werden!\n\n" +
+                    applicationFeatureController.getLastException().getMessage()
+                );
+            }
+            windowFrame.getOngoingProcessScreen().setVisible(false);
+            windowFrame.getJustShowChangeLogScreen().setVisible(true);
+        });
+        t.start();
+    }
+
+    private void onBackToStartPage() {
+        LOG.info("DEBUG: Returned to start page.");
+        windowFrame.getJustShowChangeLogScreen().setVisible(false);
+        windowFrame.getRunApplicationScreen().setVisible(true);
+    }
+
     // Listeners //
 
     @Override
@@ -198,6 +224,12 @@ public class ApplicationInterfaceController extends AbstractInterfaceController 
         }
         if ("RunPage_RunApplication".equals(source.getName())) {
             onApplicationStarted();
+        }
+        if ("RunPage_ShowChangeLog".equals(source.getName())) {
+            onChangeLogShown();
+        }
+        if ("ShowChangeLogPage_Back".equals(source.getName())) {
+            onBackToStartPage();
         }
     }
 
