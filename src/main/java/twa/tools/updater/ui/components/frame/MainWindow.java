@@ -5,6 +5,8 @@ import lombok.Setter;
 import twa.tools.updater.ui.components.screen.*;
 
 import javax.swing.*;
+import java.awt.*;
+import java.net.URL;
 
 /**
  * Fenster der Applikation.
@@ -48,6 +50,11 @@ public class MainWindow extends AbstractWindow {
         setTitle(windowTitle);
         setLocationRelativeTo(null);
         setResizable(false);
+
+        URL url = ClassLoader.getSystemResource("config/icon.png");
+        Toolkit kit = Toolkit.getDefaultToolkit();
+        Image img = kit.createImage(url);
+        setIconImage(img);
 
         mainPanel = new JPanel(null);
         mainPanel.setBounds(0, 0, windowWidth, windowHeight);
