@@ -1,6 +1,6 @@
-package twa.siedelwood.updater.ui.components.screen;
+package twa.tools.updater.ui.components.screen;
 
-import twa.siedelwood.updater.ui.components.frame.MainWindow;
+import twa.tools.updater.ui.components.frame.MainWindow;
 
 import javax.swing.*;
 import java.awt.*;

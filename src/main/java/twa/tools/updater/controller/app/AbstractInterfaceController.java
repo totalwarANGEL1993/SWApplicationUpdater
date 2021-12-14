@@ -1,4 +1,4 @@
-package twa.siedelwood.updater.controller.app;
+package twa.tools.updater.controller.app;
 
 import org.springframework.stereotype.Component;
 

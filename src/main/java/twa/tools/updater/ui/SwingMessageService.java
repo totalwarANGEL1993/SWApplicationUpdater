@@ -1,7 +1,7 @@
-package twa.siedelwood.updater.ui;
+package twa.tools.updater.ui;
 
 import org.springframework.stereotype.Service;
-import twa.siedelwood.updater.ui.components.frame.MainWindow;
+import twa.tools.updater.ui.components.frame.MainWindow;
 
 import javax.swing.*;
 

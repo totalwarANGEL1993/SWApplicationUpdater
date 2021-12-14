@@ -1,7 +1,7 @@
-package twa.siedelwood.updater.ui.components.screen;
+package twa.tools.updater.ui.components.screen;
 
 import lombok.Getter;
-import twa.siedelwood.updater.ui.components.frame.MainWindow;
+import twa.tools.updater.ui.components.frame.MainWindow;
 
 import javax.swing.*;
 import java.awt.*;
@@ -11,7 +11,7 @@ import java.awt.*;
  *
  * Alle anderen Panel werden ausgeblendet und dieses an ihrer Stelle angezeigt.
  */
-public class UpdateApplicationScreen extends JPanel {
+public class JustShowChangeLogScreen extends JPanel {
     private MainWindow parentWindow;
     private int panelHeight;
     private int panelWidth;
@@ -24,7 +24,7 @@ public class UpdateApplicationScreen extends JPanel {
      * @param width  Breite
      * @param height Höhe
      */
-    public UpdateApplicationScreen(MainWindow window, int width, int height) {
+    public JustShowChangeLogScreen(MainWindow window, int width, int height) {
         super();
         parentWindow = window;
         panelHeight = height;
@@ -46,18 +46,11 @@ public class UpdateApplicationScreen extends JPanel {
      * Zeigt Zustimmen Button und Ablehnen Button an.
      */
     private void createControlGoup() {
-        JButton decline = new JButton("Abbrechen");
-        decline.setName("UpdateDetailsPage_CancleUpdate");
+        JButton decline = new JButton("Zurück");
+        decline.setName("ShowChangeLogPage_Back");
         decline.addActionListener(parentWindow.getApplicationInterfaceController());
         decline.setBounds(10, panelHeight -100, 120, 25);
         add(decline);
-
-        JButton confirm = new JButton("Aktualisieren");
-        confirm.setName("UpdateDetailsPage_ConfirmUpdate");
-        confirm.addActionListener(parentWindow.getApplicationInterfaceController());
-        confirm.setBounds(panelWidth -145, panelHeight -100, 120, 25);
-        confirm.requestFocus();
-        add(confirm);
 
         JLabel versionLabel = new JLabel("<html>Version: " +parentWindow.getVersion()+ "</html>");
         versionLabel.setBounds(10, panelHeight - 60, 200, 15);
@@ -87,17 +80,8 @@ public class UpdateApplicationScreen extends JPanel {
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setViewportView(changeLog);
         scrollPane.setVisible(true);
-        scrollPane.setBounds(10, 45, panelWidth -35, panelHeight -150);
+        scrollPane.setBounds(10, 10, panelWidth -35, panelHeight -120);
         changeLog.setSize(panelWidth -35, panelHeight -150);
         add(scrollPane);
-
-        String text = "" +
-            "Ein Update steht zur Installation bereit.<br>" +
-            "Folgend siehst du die letzten Änderungen. <b>Hinweis:</b> Du kannst das Update auch überspringen.";
-        JLabel description = new JLabel("<html>" +text+ "</html>");
-        description.setFont(new Font("Arial", Font.PLAIN, 12));
-        description.setBounds(10, 10, panelWidth -20, 30);
-        description.setVisible(true);
-        add(description);
     }
 }

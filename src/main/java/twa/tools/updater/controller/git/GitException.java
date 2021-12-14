@@ -1,4 +1,4 @@
-package twa.siedelwood.updater.controller.git;
+package twa.tools.updater.controller.git;
 
 public class GitException extends Exception {
     public GitException() {

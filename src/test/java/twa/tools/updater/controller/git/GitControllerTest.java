@@ -1,4 +1,4 @@
-package twa.siedelwood.updater.controller.git;
+package twa.tools.updater.controller.git;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;

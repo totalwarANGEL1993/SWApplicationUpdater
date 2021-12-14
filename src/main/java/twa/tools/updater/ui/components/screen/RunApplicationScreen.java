@@ -1,7 +1,7 @@
-package twa.siedelwood.updater.ui.components.screen;
+package twa.tools.updater.ui.components.screen;
 
 import lombok.Getter;
-import twa.siedelwood.updater.ui.components.frame.MainWindow;
+import twa.tools.updater.ui.components.frame.MainWindow;
 
 import javax.swing.*;
 import java.awt.*;
@@ -11,7 +11,7 @@ import java.awt.*;
  *
  * Alle anderen Panel werden ausgeblendet und dieses an ihrer Stelle angezeigt.
  */
-public class UpdateOrContinueScreen extends JPanel {
+public class RunApplicationScreen extends JPanel {
     private MainWindow parentWindow;
     private int panelHeight;
     private int panelWidth;
@@ -24,7 +24,7 @@ public class UpdateOrContinueScreen extends JPanel {
      * @param width  Breite
      * @param height Höhe
      */
-    public UpdateOrContinueScreen(MainWindow window, int width, int height) {
+    public RunApplicationScreen(MainWindow window, int width, int height) {
         super();
         parentWindow = window;
         panelHeight = height;
@@ -43,23 +43,23 @@ public class UpdateOrContinueScreen extends JPanel {
 
     private void createControls() {
         JLabel textLabel = new JLabel(
-            "<html><span style=\"text-align: center;\">Ein Update steht zum Download bereit!</span></html>"
+            "<html><span style=\"text-align: center;\">Die Anwendung ist aktuell und bereit.</span></html>"
         );
-        textLabel.setBounds((int) (panelWidth * 0.50 -110), (int) (panelHeight * 0.40 -40), 300, 12);
+        textLabel.setBounds((int) (panelWidth * 0.50 -105), (int) (panelHeight * 0.40 -40), 300, 12);
         textLabel.setFont(new Font("Arial", Font.PLAIN, 12));
         add(textLabel);
 
-        JButton confirm = new JButton("<html><span style=\"font-size: 18px;\">Aktualisieren</span></html>");
-        confirm.setName("UpdatePage_ConfirmUpdate");
+        JButton confirm = new JButton("<html><span style=\"font-size: 18px;\">Starten</span></html>");
+        confirm.setName("RunPage_RunApplication");
         confirm.addActionListener(parentWindow.getApplicationInterfaceController());
-        confirm.setBounds((int) (panelWidth * 0.5 -90),  (int) (panelHeight * 0.40 -10),  180, 35);
+        confirm.setBounds((int) (panelWidth * 0.5 -95),  (int) (panelHeight * 0.40 -10),  180, 35);
         add(confirm);
 
-        JButton decline = new JButton("Ignorieren");
-        decline.setName("UpdatePage_IgnoreUpdate");
-        decline.addActionListener(parentWindow.getApplicationInterfaceController());
-        decline.setBounds((int) (panelWidth * 0.5 -60), panelHeight -100, 120, 25);
-        add(decline);
+        JButton showlog = new JButton("Changelog");
+        showlog.setName("RunPage_ShowChangeLog");
+        showlog.addActionListener(parentWindow.getApplicationInterfaceController());
+        showlog.setBounds((int) (panelWidth * 0.5 -60), panelHeight -100, 120, 25);
+        add(showlog);
 
         JLabel versionLabel = new JLabel("<html>Version: " +parentWindow.getVersion()+ "</html>");
         versionLabel.setBounds(10, panelHeight - 60, 200, 15);

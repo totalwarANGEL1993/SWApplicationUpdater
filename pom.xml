@@ -10,7 +10,7 @@
         <version>2.2.2.RELEASE</version>
         <relativePath/>
     </parent>
-    <groupId>twa.symfonia</groupId>
+    <groupId>twa.tools</groupId>
     <artifactId>updater</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>Siedelwood Application Updater</name>
@@ -125,7 +125,7 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
                     <fork>true</fork>
-                    <mainClass>twa.siedelwood.updater.SiedelwoodUpdaterApplication</mainClass>
+                    <mainClass>twa.tools.updater.SiedelwoodUpdaterApplication</mainClass>
                     <finalName>../var/updater</finalName>
                     <outputDirectory>var</outputDirectory>
                 </configuration>
@@ -145,7 +145,7 @@
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
-                            <mainClass>twa.siedelwood.updater.SiedelwoodUpdaterApplication</mainClass>
+                            <mainClass>twa.tools.updater.SiedelwoodUpdaterApplication</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

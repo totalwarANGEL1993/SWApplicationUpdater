@@ -1,14 +1,11 @@
-package twa.siedelwood.updater.controller.app;
+package twa.tools.updater.controller.app;
 
-import java.awt.*;
 import java.io.*;
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
-import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.slf4j.Logger;
@@ -17,8 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
-import twa.siedelwood.updater.controller.git.GitController;
-import twa.siedelwood.updater.controller.git.GitException;
+import twa.tools.updater.controller.git.GitController;
+import twa.tools.updater.controller.git.GitException;
 
 /**
  * Controller zur Steuerung der Prozesse der Anwendung.

@@ -1,8 +1,8 @@
-package twa.siedelwood.updater.ui.components.frame;
+package twa.tools.updater.ui.components.frame;
 
 import lombok.Getter;
 import lombok.Setter;
-import twa.siedelwood.updater.ui.components.screen.*;
+import twa.tools.updater.ui.components.screen.*;
 
 import javax.swing.*;
 

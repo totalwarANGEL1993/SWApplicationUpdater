@@ -1,4 +1,4 @@
-package twa.siedelwood.updater.controller.app;
+package twa.tools.updater.controller.app;
 
 import java.awt.event.ActionEvent;
 import javax.swing.*;
@@ -15,10 +15,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.stereotype.Component;
-import twa.siedelwood.updater.controller.git.GitController;
-import twa.siedelwood.updater.controller.git.GitException;
-import twa.siedelwood.updater.ui.SwingMessageService;
-import twa.siedelwood.updater.ui.components.frame.MainWindow;
+import twa.tools.updater.controller.git.GitException;
+import twa.tools.updater.ui.SwingMessageService;
+import twa.tools.updater.ui.components.frame.MainWindow;
 
 /**
  * Controller zur Reaktion auf die Aktionen des Benutzers.

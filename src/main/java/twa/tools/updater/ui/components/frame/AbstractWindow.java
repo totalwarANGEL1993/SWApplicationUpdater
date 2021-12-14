@@ -1,9 +1,9 @@
-package twa.siedelwood.updater.ui.components.frame;
+package twa.tools.updater.ui.components.frame;
 
 import lombok.Getter;
 import lombok.Setter;
-import twa.siedelwood.updater.controller.app.ApplicationFeatureController;
-import twa.siedelwood.updater.controller.app.ApplicationInterfaceController;
+import twa.tools.updater.controller.app.ApplicationFeatureController;
+import twa.tools.updater.controller.app.ApplicationInterfaceController;
 
 import javax.swing.*;
 import java.awt.event.WindowEvent;
