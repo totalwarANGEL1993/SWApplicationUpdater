@@ -51,7 +51,7 @@ public class MainWindow extends AbstractWindow {
         setLocationRelativeTo(null);
         setResizable(false);
 
-        URL url = ClassLoader.getSystemResource("config/icon.png");
+        URL url = ClassLoader.getSystemResource("config/logo_100.png");
         Toolkit kit = Toolkit.getDefaultToolkit();
         Image img = kit.createImage(url);
         setIconImage(img);

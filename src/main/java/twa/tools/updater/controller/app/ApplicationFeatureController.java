@@ -161,7 +161,7 @@ public class ApplicationFeatureController {
             pwd = pwd.replaceAll(" ", "^ ");
             if (targetJarMode.equals("normal")) {
                 String execution = "" +
-                    "jre/bin/java -jar -Dfile.encoding=UTF8 " +
+                    "jre/bin/java -Dspring.profiles.active=pro -Dfile.encoding=UTF8 -jar " +
                     targetDirectory +
                     File.separator +
                     targetDirName +
@@ -180,7 +180,13 @@ public class ApplicationFeatureController {
                     targetDirName;
                 path = path.replaceAll("\\\\", "/");
                 path = path.replaceAll(" ", "^ ");
-                String execution = "cmd /c /b start & cd " + path + " & " + pwd + "/jre/bin/java -jar -Dfile.encoding=UTF8 " + targetJarName;
+                String execution = "" +
+                    "cmd /c /b start & cd " +
+                    path +
+                    " & "
+                    + pwd +
+                    "/jre/bin/java -Dspring.profiles.active=pro -Dfile.encoding=UTF8 -jar "
+                    + targetJarName;
                 LOG.info("Executing runtime: " +execution);
                 Runtime.getRuntime().exec(execution);
             }
