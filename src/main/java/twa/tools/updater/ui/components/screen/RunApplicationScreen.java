@@ -58,7 +58,7 @@ public class RunApplicationScreen extends JPanel {
         JButton showlog = new JButton("Changelog");
         showlog.setName("RunPage_ShowChangeLog");
         showlog.addActionListener(parentWindow.getApplicationInterfaceController());
-        showlog.setBounds((int) (panelWidth * 0.5 -60), panelHeight -100, 120, 25);
+        showlog.setBounds((int) (panelWidth * 0.5 -65), panelHeight -100, 120, 25);
         add(showlog);
 
         JLabel versionLabel = new JLabel("<html>Version: " +parentWindow.getVersion()+ "</html>");
