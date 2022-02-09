@@ -158,7 +158,6 @@ public class ApplicationFeatureController {
     public void runTargetApplication() {
         try {
             String pwd = System.getProperty("user.dir");
-            pwd = pwd.replaceAll(" ", "^ ");
             if (targetJarMode.equals("normal")) {
                 String execution = "" +
                     "jre/bin/java -Dspring.profiles.active=pro -Dfile.encoding=UTF8 -jar " +
@@ -178,14 +177,12 @@ public class ApplicationFeatureController {
                     targetDirectory +
                     File.separator +
                     targetDirName;
-                path = path.replaceAll("\\\\", "/");
-                path = path.replaceAll(" ", "^ ");
                 String execution = "" +
                     "cmd /c /b start & cd " +
-                    path +
-                    " & "
-                    + pwd +
-                    "/jre/bin/java -Dspring.profiles.active=pro -Dfile.encoding=UTF8 -jar "
+                    "\"" + path + "\"" +
+                    " & " +
+                    "\"" + pwd + "/jre/bin/java" + "\" " +
+                    "-Dspring.profiles.active=pro -Dfile.encoding=UTF8 -jar "
                     + targetJarName;
                 LOG.info("Executing runtime: " +execution);
                 Runtime.getRuntime().exec(execution);
